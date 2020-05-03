@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 
-data = pd.read_csv('magento04142020.csv',\
+data = pd.read_csv('magento04302020.csv',\
                  low_memory= False)\
     .dropna(axis= 1, how= 'all')
 
@@ -18,7 +18,7 @@ cols= [\
           'related_parent_id',\
           'related_id',\
           'upc',\
-          'image',\
+          # 'image',\
           'size',\
           'color',\
           'description',\
@@ -43,9 +43,9 @@ dfImg.upc = dfImg.upc.apply(lambda x: makeN(x,13))\
 
 #%%
 
-dfImg.image = dfImg.image\
-    .map(lambda x: np.nan if x == 'no_selection' else x)
-dfImg.image = 'product' + dfImg.image
+# dfImg.image = dfImg.image\
+#     .map(lambda x: np.nan if x == 'no_selection' else x)
+# dfImg.image = 'product' + dfImg.image
 
 
 #%%

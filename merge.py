@@ -14,7 +14,8 @@ import numpy as np
 
 df1 = pd.read_pickle('fromRetailPro')
 df2 = pd.read_pickle('fromMagento')
-df2.columns = ['styleSID','itemSID','UPC','image_0',\
+df2.columns = ['styleSID','itemSID','UPC',\
+               # 'image_0',\
                'size','color','desc','desc_short']
 df2 = df2[df2.styleSID.notnull()]
 df3 = pd.read_pickle('fromRDI')
@@ -40,7 +41,7 @@ cols=['sku',\
     'size_y',\
     'UPC',\
     'image',\
-    'image_0',\
+    # 'image_0',\
     'image_1',\
     'image_2',\
     'image_3',\
@@ -66,16 +67,16 @@ cols=['sku',\
     
 df=y[cols]
 
-df.image = np.where(df.image.isnull(),df.image_0,df.image)
+# df.image = np.where(df.image.isnull(),df.image_0,df.image)
 
-df[['color_x','size_x','color_y','size_y']]\
+df.loc[:,['color_x','size_x','color_y','size_y']]\
     = df[['color_x','size_x','color_y','size_y']].replace('',np.nan)
     
-df['color'] = np.where(df.color_y.notnull() & df.color_x.notnull(),\
+df.loc[:,'color'] = np.where(df.color_y.notnull() & df.color_x.notnull(),\
                           df.color_y,\
                           df.color_x)
 
-df['size'] = np.where(df.size_x.notnull() & df.size_y.notnull(),\
+df.loc[:,'size'] = np.where(df.size_x.notnull() & df.size_y.notnull(),\
                          df.size_y,\
                          df.size_x)
     
@@ -92,10 +93,7 @@ df['webName'] = (df.name + ' ' + df.year.fillna('')).str.strip()
 
 #%%
 #settle distinct webName vs. styleSIDs, v complicated
-webDf = df[(df.image.notnull())\
-           & (df.lSold > (dt.datetime.now() - dt.timedelta(days=2*365)))\
-            & (df.cost>0) & (df.pSale>0)\
-               ]    
+webDf = df 
 gb = webDf.groupby('webName')   
 l = []
 for (a,g) in gb:
@@ -105,7 +103,7 @@ for (a,g) in gb:
             .index.to_list())
         
 webDf.drop(index=l,inplace=True)
-webDf =  webDf[webDf.sku!='002956']
+# webDf =  webDf[webDf.sku!='002956']
 
 """uncomment to run outside of main"""
 # webDf.to_pickle('mergedDf')

@@ -1,46 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-df = pd.read_pickle('optionDf')
+import numpy as np
+df = pd.read_pickle('optionDf').reset_index(drop=True)
+
+
+
+
 
 
 data = pd.read_csv('uploadTemplateOriginal.csv')
 cols = list(data.columns)
 out = pd.DataFrame(columns = cols)
-
-"""
-styleSID
-sku
-UPC
-itemSID
-CAT
-BRAND
-name
-year
-weight
-qty
-cost
-pSale
-pMSRP
-pMAP
-pAmazon
-pSWAP
-fRcvd
-lRcvd
-lSold
-lEdit
-image_1
-image_2
-image_3
-image_4
-image_5
-image_6
-image
-description
-short_description
-color
-size
-"""
 
 """
 Item Type
@@ -125,18 +96,26 @@ out["Product Name"] = df.webName
 #images
     #needs descriptions
 out["Product Image File - 1"] = df.image
-out[[f'Product Image File - {i+2}' for i in range(5)]]\
-    = df[[f'image_{i}' for i in range(5)]]
+out[[f'Product Image File - {i+1}' for i in range(1,5)]]\
+    = df[[f'image_{i}' for i in range(1,5)]]
 out = out.reindex(out.columns.to_list()\
-                  +[f"Product Image ID - {i}" for i in range(2,6)]\
-                  +[f'Product Image Description - {i}' for i in range(2,6)],\
+                  +[f"Product Image ID - {i}" for i in range(3,6)]\
+                  +[f'Product Image Description - {i}' for i in range(3,6)],\
                       axis=1)
 
 #descriptions
 out['Product Description'] = df.desc
 
 out["Brand Name"] = df.BRAND
-out["Category"] = df.CAT
+
+
+
+
+
+
+
+
+
 out["Current Stock Level"] = df.qty
 out["Product Code/SKU"] = df.sku
 out["Product UPC/EAN"] = df.UPC
@@ -151,80 +130,35 @@ out["Product Weight"] = df.weight
 out["Allow Purchases?"] = 'Y'
 out["Item Type"] = df.itemType
 out["Product Type"] = 'P'
-out["Track Inventory"] = 'by product'
+out["Track Inventory"] = np.where(df.sku.str[:2]=='1-',\
+                                  'by option','by product')
+    
+    
+df['PV'] = np.where(((df.image.isnull()) | (df.qty==0)),\
+                                   'N','Y')
 
+
+    
+    
+    
+    
+"""categories"""
+
+cats = df.loc[df.PV=='Y'].groupby('CAT').UPC.nunique().rename('num_unique')
+x = pd.merge(df,cats, on='CAT', how='left')
+x.CAT = np.where(x.num_unique < 9, 'Miscellaneous', x.CAT)
+
+
+
+out['Product Visible?'] = df.PV
+
+
+out["Category"] = x.CAT
 
 #drop na
 
 
 
-
-
-
-
-
-######################
-#
-#       UPLOAD
-#
-#########################
-
-#so far
-"""
-Item Type
-Product Name
-Product Type
-Product Code/SKU
-Brand Name
-Product Description
-Cost Price
-Retail Price
-Sale Price
-Allow Purchases?
-Track Inventory
-Current Stock Level
-Category
-Product UPC/EAN
-Product Image File - 1
-Product Image File - 2
-Product Image File - 3
-Product Image File - 4
-Product Image File - 5
-Product Image File - 6
-"""
-
 """uncomment to run outside of main"""
 # out.to_csv('upload.csv', quotechar="\"")
 
-#dulplicates, not imported (dupicate sku):
-"""
-Line 6860 Gore-Tex Linear Mitt 18-19 L Black
-Line 4876 Base 2.0 Legging 19-20 L Black
-Line 1846 Minimalist Pant 19-20 L Black
-Line 4874 Base 2.0 Legging 19-20 S Black
-Line 5700 PreCip Eco Pant 19-20 M Black
-Line 2684 Warden 11 MNC 20-21 90mm Black
-Line 2319 Warden 11 MNC 20-21 90mm Black
-Line 1218 Legendary Pant 18-19 L Black
-Line 4877 Base 2.0 Legging 19-20 XL Black
-Line 5279 Gore-tex Linear Glove 18-19 M Black
-Line 3917 Gore Glove 19-20 M TruBlk
-Line 6160 Gore Glove 18-19 XL BogHea
-Line 5701 PreCip Eco Pant 19-20 L Black
-Line 5280 Gore-tex Linear Glove 18-19 L Black
-Line 6159 Gore Glove 18-19 L BogHea
-Line 6859 Gore-Tex Linear Mitt 18-19 M Black
-Line 6157 Gore Glove 18-19 S BogHea
-Line 2683 Warden 11 MNC 20-21 100mm Black
-Line 3916 Gore Glove 19-20 S TruBlk
-Line 6158 Gore Glove 18-19 M BogHea
-Line 4875 Base 2.0 Legging 19-20 M Black
-Line 6552 Randonnee Glove 19-20 M Black
-Line 6553 Randonnee Glove 19-20 L Black
-Line 1217 Legendary Pant 18-19 M Black
-Line 3915 Gore Glove 19-20 XS TruBlk
-Line 2320 Warden 11 MNC 20-21 100mm Black
-Line 1845 Minimalist Pant 19-20 M Black
-Line 2893 Z 12 19-20 90mm Black/ White
-Line 4130 Vandal Boot 19-20 7 Black
-"""

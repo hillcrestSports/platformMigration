@@ -48,7 +48,6 @@ gps = ['10 Scraper 19-20',
 # gb = sample.groupby('webName')
 
 
-
 """for making rt adn rbs"""
 #f'[RT]Color={color}'
 #f'[RB]Size={size}
@@ -69,7 +68,8 @@ def add_row(x):
         #fr = first row of x
         """header"""
         fr = x.iloc[0]
-        fr.image = x.image.loc[x.image.first_valid_index()]
+        if x. image.notnull().sum():
+            fr.image = x.image.loc[x.image.first_valid_index()]
         fr.color = fr['size'] = np.nan
         fr.pSale = x.pSale.min()
         fr.sku = '0-' + fr.sku
